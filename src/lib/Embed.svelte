@@ -1,7 +1,8 @@
 <script>
+	import { afterNavigate } from '$app/navigation';
 	import { ytSrcset } from '$lib/utils';
 	import { onMount } from 'svelte';
-	import { afterPageTransition } from './page-transition';
+	import { setupViewTransition } from 'sveltekit-view-transition';
 
 	/** @type {import('./types').Video}*/
 	export let video;
@@ -9,8 +10,12 @@
 	let renderIframe = true;
 	let iframeReady = false;
 
-	afterPageTransition(() => {
-		renderIframe = true;
+	const { on } = setupViewTransition();
+
+	afterNavigate(() => {
+		on('transition-finished', () => {
+			renderIframe = true;
+		});
 	});
 
 	// this used to use a #key, but ran into race conditions with the transition

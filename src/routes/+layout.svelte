@@ -1,15 +1,11 @@
 <script>
-	import '../app.css';
-	import {
-		preparePageTransition,
-		whileIncomingTransition,
-		getPageTransitionType
-	} from '$lib/page-transition';
-	import { page } from '$app/stores';
 	import { afterNavigate } from '$app/navigation';
-	import AnimationTool from '$lib/AnimationTool.svelte';
+	import { page } from '$app/stores';
+	import { getClassToAdd, getPageTransitionType } from '$lib/page-transition';
+	import { setupViewTransition } from 'sveltekit-view-transition';
+	import '../app.css';
 
-	let showBackIcon = $page.url.pathname.includes('/videos');
+	$: showBackIcon = $page.url.pathname.includes('/videos');
 	let backUrl = '/';
 
 	afterNavigate(({ from, to }) => {
@@ -24,16 +20,22 @@
 		}
 	});
 
-	preparePageTransition(getPageTransitionType);
+	const { classes } = setupViewTransition();
 
-	whileIncomingTransition(({ to }) => {
-		// This feels hacky, but it seems to work
-		// Previously, showBackIcon was derived from $page.url.pathname
-		// However, this caused a race condition where the $page store updated
-		// before the transition started, causing the back icon to disappear too soon
-		// This will likely be an issue with any shared component on the page that needs to be
-		// derived from the URL and wants to participate in the transition
-		showBackIcon = to.pathname.includes('/videos');
+	afterNavigate(() => {
+		classes(({ navigation }) => {
+			const retval = [];
+			if (navigation.delta && navigation.delta < 0) {
+				retval.push('back-transition');
+			}
+			const to_add = getClassToAdd(getPageTransitionType(navigation));
+			if (to_add) {
+				retval.push(to_add);
+			}
+			if (retval.length > 0) {
+				return retval;
+			}
+		});
 	});
 </script>
 

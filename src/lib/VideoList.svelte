@@ -1,32 +1,11 @@
 <script>
-	import {
-		TransitionType,
-		beforePageTransition,
-		afterPageTransition,
-		whileIncomingTransition
-	} from './page-transition';
+	import { setupViewTransition } from 'sveltekit-view-transition';
 
 	import { formatDate, ytSrcset } from './utils';
+	import { TransitionType, getClassToAdd } from './page-transition';
 	/** @type {Record<string, import('./types').Video>}*/
 	export let videos;
-
-	let navigationTarget = '';
-
-	beforePageTransition(({ to, type }) => {
-		if (type === TransitionType.ThumbsToVideo) {
-			navigationTarget = to.pathname;
-		}
-	});
-
-	whileIncomingTransition(({ from, type }) => {
-		if (type === TransitionType.VideoToThumbs) {
-			navigationTarget = from.pathname;
-		}
-	});
-
-	afterPageTransition(() => {
-		navigationTarget = '';
-	});
+	const { transition } = setupViewTransition();
 </script>
 
 <ol class="video-list">
@@ -38,11 +17,47 @@
 					class="video-thumb"
 					srcset={ytSrcset(video.id)}
 					alt={video.title}
-					style:view-transition-name={navigationTarget === href ? 'embed-container' : ''}
+					use:transition={{
+						name: 'embed-container',
+						shouldApply({ navigation }) {
+							return (
+								navigation?.to?.url?.pathname === href &&
+								document.documentElement.classList.contains(
+									getClassToAdd(TransitionType.ThumbsToVideo) ?? ''
+								)
+							);
+						},
+						applyImmediately({ navigation }) {
+							return (
+								navigation?.from?.url?.pathname === href &&
+								document.documentElement.classList.contains(
+									getClassToAdd(TransitionType.VideoToThumbs) ?? ''
+								)
+							);
+						}
+					}}
 				/>
 				<p
 					class="video-meta"
-					style:view-transition-name={navigationTarget === href ? 'video-details' : ''}
+					use:transition={{
+						name: 'video-details',
+						shouldApply({ navigation }) {
+							return (
+								navigation?.to?.url?.pathname === href &&
+								document.documentElement.classList.contains(
+									getClassToAdd(TransitionType.ThumbsToVideo) ?? ''
+								)
+							);
+						},
+						applyImmediately({ navigation }) {
+							return (
+								navigation?.from?.url?.pathname === href &&
+								document.documentElement.classList.contains(
+									getClassToAdd(TransitionType.VideoToThumbs) ?? ''
+								)
+							);
+						}
+					}}
 				>
 					<time>{formatDate(new Date(video.published))}</time>
 				</p>
