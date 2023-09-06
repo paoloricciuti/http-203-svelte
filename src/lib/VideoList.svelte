@@ -2,7 +2,7 @@
 	import { setupViewTransition } from 'sveltekit-view-transition';
 
 	import { formatDate, ytSrcset } from './utils';
-	import { TransitionType, getClassToAdd } from './page-transition';
+	import { TransitionType, getClassToAdd, getPageTransitionType } from './page-transition';
 	/** @type {Record<string, import('./types').Video>}*/
 	export let videos;
 	const { transition } = setupViewTransition();
@@ -20,19 +20,18 @@
 					use:transition={{
 						name: 'embed-container',
 						shouldApply({ navigation }) {
+							const transition_type = getPageTransitionType(navigation);
 							return (
 								navigation?.to?.url?.pathname === href &&
-								document.documentElement.classList.contains(
-									getClassToAdd(TransitionType.ThumbsToVideo) ?? ''
-								)
+								transition_type === TransitionType.ThumbsToVideo
 							);
 						},
 						applyImmediately({ navigation }) {
+							const transition_type = getPageTransitionType(navigation);
+
 							return (
 								navigation?.from?.url?.pathname === href &&
-								document.documentElement.classList.contains(
-									getClassToAdd(TransitionType.VideoToThumbs) ?? ''
-								)
+								transition_type === TransitionType.VideoToThumbs
 							);
 						}
 					}}
