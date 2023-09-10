@@ -22,20 +22,18 @@
 
 	const { classes } = setupViewTransition();
 
-	afterNavigate(() => {
-		classes(({ navigation }) => {
-			const retval = [];
-			if (navigation.delta && navigation.delta < 0) {
-				retval.push('back-transition');
-			}
-			const to_add = getClassToAdd(getPageTransitionType(navigation));
-			if (to_add) {
-				retval.push(to_add);
-			}
-			if (retval.length > 0) {
-				return retval;
-			}
-		});
+	classes(({ navigation }) => {
+		const retval = [];
+		if (navigation.delta && navigation.delta < 0) {
+			retval.push('back-transition');
+		}
+		const to_add = getClassToAdd(getPageTransitionType(navigation));
+		if (to_add) {
+			retval.push(to_add);
+		}
+		if (retval.length > 0) {
+			return retval;
+		}
 	});
 </script>
 
